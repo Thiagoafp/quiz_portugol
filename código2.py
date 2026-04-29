@@ -34,9 +34,11 @@ html, body, [class*="css"] { font-family: 'Syne', sans-serif; }
 }
 hr { border-color: #21262d !important; }
 .stButton > button {
-    font-family: 'Syne', sans-serif !important;
-    font-weight: 700 !important;
+    background-color: #58a6ff !important;  /* azul claro */
+    color: white !important;
+    border: none !important;
     border-radius: 8px !important;
+    font-weight: 700 !important;
 }
 /* Código */
 .code-block {
@@ -142,7 +144,7 @@ SCOPES = [
 
 @st.cache_resource
 def get_sheet():
-    creds_dict = json.loads(st.secrets["GOOGLE_CREDENTIALS"])
+    creds_dict = dict(st.secrets["GOOGLE_CREDENTIALS"])
     creds = Credentials.from_service_account_info(creds_dict, scopes=SCOPES)
     client = gspread.authorize(creds)
     sheet = client.open_by_key(st.secrets["SHEET_ID"]).sheet1
