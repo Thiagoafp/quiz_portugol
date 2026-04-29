@@ -40,6 +40,9 @@ hr { border-color: #21262d !important; }
     border-radius: 8px !important;
     font-weight: 700 !important;
 }
+.stButton > button:hover {
+    background-color: #191970 !important; /* azul mais claro no hover */
+}
 /* Código */
 .code-block {
     background: #161b22; border: 1px solid #30363d; border-radius: 12px;
