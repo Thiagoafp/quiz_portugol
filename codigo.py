@@ -34,11 +34,30 @@ hr { border-color: #21262d !important; }
     background-color: #58a6ff !important;
     color: white !important;
     border: none !important;
-    border-radius: 8px !important;
+    border-radius: 12px !important;
     font-weight: 700 !important;
+    font-size: 1rem !important;
+    padding: 0.9rem 1rem !important;
+    min-height: 3.2rem !important;
+    line-height: 1.4 !important;
 }
 .stButton > button:hover {
-    background-color: #191970 !important;
+    background-color: #1a3a6b !important;
+}
+/* Wrapper para botões grandes do menu */
+.menu-btn > div > button, .menu-btn .stButton > button {
+    min-height: 4.8rem !important;
+    font-size: 1.2rem !important;
+    border-radius: 16px !important;
+    letter-spacing: .02em !important;
+}
+/* fallback direto no elemento pai */
+.menu-btn + div .stButton > button {
+    min-height: 4.8rem !important;
+}
+/* força altura via selector de proximidade */
+section[data-testid="stVerticalBlock"] .menu-btn ~ div .stButton > button {
+    min-height: 4.8rem !important;
 }
 
 /* Menu de atividades */
@@ -87,9 +106,13 @@ div[data-testid="stSelectbox"] > div > div {
     font-family: 'Fira Code', monospace !important;
     font-size: .82rem !important;
     color: #58a6ff !important;
-    min-height: 32px !important;
+    min-height: 36px !important;
 }
-div[data-testid="stSelectbox"] label { display: none !important; }
+div[data-testid="stSelectbox"] label {
+    font-size: .72rem !important;
+    color: #8b949e !important;
+    margin-bottom: 2px !important;
+}
 </style>
 """, unsafe_allow_html=True)
 
@@ -315,37 +338,52 @@ def render_quiz(exercises, idx_key, respostas_key, resultados_key, acertos_key, 
                 html_row += '</div>'
                 st.markdown(html_row, unsafe_allow_html=True)
             else:
-                col_defs = []
+                # Renderiza linha completa inline: textos + selectboxes nativos em flex
+                # Cada gap vira um st.selectbox abaixo do texto da linha (mobile safe)
+                # Monta preview da linha com marcadores de posição
+                preview_parts = []
                 for tipo, val in partes:
                     if tipo == "t":
-                        col_defs.append(max(len(val) * 0.12, 1))
+                        preview_parts.append(f'<span class="ct">{val}</span>')
                     else:
-                        col_defs.append(2)
+                        gid = str(val)
+                        atual = st.session_state[respostas_key][idx].get(gid)
+                        placeholder = atual if atual else "___"
+                        cor = "#58a6ff" if atual else "#8b949e"
+                        preview_parts.append(
+                            f'<span style="display:inline-block;padding:1px 8px;border-radius:5px;'
+                            f'border:2px dashed {cor};color:{cor};font-family:\'Fira Code\',monospace;'
+                            f'font-size:.82rem;min-width:60px;text-align:center">{placeholder}</span>'
+                        )
+                preview_html = '<div class="code-row" style="flex-wrap:wrap;align-items:center;gap:4px;margin-bottom:2px">' + "".join(preview_parts) + '</div>'
+                st.markdown(preview_html, unsafe_allow_html=True)
 
-                cols = st.columns(col_defs)
-                col_i = 0
-                for tipo, val in partes:
-                    with cols[col_i]:
-                        if tipo == "t":
-                            st.markdown(f'<span class="ct" style="font-family:\'Fira Code\',monospace;font-size:.88rem;color:#c9d1d9;white-space:pre">{val}</span>', unsafe_allow_html=True)
-                        else:
-                            gid = str(val)
+                # Selectboxes abaixo da linha, lado a lado usando colunas apenas se <= 3 gaps
+                gap_ids = [str(val) for tipo, val in partes if tipo == "g"]
+                if len(gap_ids) == 1:
+                    gid = gap_ids[0]
+                    key = f"gap_{idx_key}_{idx}_{gid}"
+                    opcoes_gap = ["— escolha —"] + opcoes
+                    atual = st.session_state[respostas_key][idx].get(gid)
+                    idx_atual = opcoes_gap.index(atual) if atual and atual in opcoes_gap else 0
+                    escolha = st.selectbox(f"↑ lacuna {gid}", options=opcoes_gap, index=idx_atual, key=key)
+                    if escolha != "— escolha —":
+                        st.session_state[respostas_key][idx][gid] = escolha
+                    elif gid in st.session_state[respostas_key][idx]:
+                        del st.session_state[respostas_key][idx][gid]
+                else:
+                    cols = st.columns(len(gap_ids))
+                    for ci, gid in enumerate(gap_ids):
+                        with cols[ci]:
                             key = f"gap_{idx_key}_{idx}_{gid}"
                             opcoes_gap = ["— escolha —"] + opcoes
                             atual = st.session_state[respostas_key][idx].get(gid)
-                            idx_atual = (opcoes_gap.index(atual) if atual and atual in opcoes_gap else 0)
-                            escolha = st.selectbox(
-                                label=f"gap{gid}",
-                                options=opcoes_gap,
-                                index=idx_atual,
-                                key=key,
-                                label_visibility="collapsed"
-                            )
+                            idx_atual = opcoes_gap.index(atual) if atual and atual in opcoes_gap else 0
+                            escolha = st.selectbox(f"↑ lacuna {gid}", options=opcoes_gap, index=idx_atual, key=key)
                             if escolha != "— escolha —":
                                 st.session_state[respostas_key][idx][gid] = escolha
                             elif gid in st.session_state[respostas_key][idx]:
                                 del st.session_state[respostas_key][idx][gid]
-                    col_i += 1
 
     st.markdown('</div>', unsafe_allow_html=True)
 
@@ -423,18 +461,47 @@ def render_final(exercises, acertos_key, nome):
 # ─── TELA: MENU ───────────────────────────────────────────────────────────────
 
 if st.session_state.tela == "menu":
-    st.markdown('<div class="menu-title">Atividades Aula</div>', unsafe_allow_html=True)
-    st.markdown("---")
+    st.markdown("""
+    <div style="text-align:center; padding: 2rem 0 1.5rem 0;">
+        <div style="font-size:2.8rem; margin-bottom:.5rem">💻</div>
+        <div style="font-family:'Syne',sans-serif; font-size:2rem; font-weight:800;
+            background: linear-gradient(135deg, #58a6ff, #3fb950);
+            -webkit-background-clip:text; -webkit-text-fill-color:transparent;
+            margin-bottom:.4rem;">
+            Atividades Aula
+        </div>
+        <div style="color:#8b949e; font-size:.95rem; margin-bottom:.3rem;">
+            Bem-vindos, alunos da <strong style="color:#c9d1d9;">Aula Teste</strong>! 👋
+        </div>
+        <div style="color:#8b949e; font-size:.85rem;">
+            Escolha uma atividade abaixo para começar.
+        </div>
+    </div>
+    """, unsafe_allow_html=True)
 
-    col_a, col_b = st.columns(1), None
-
-    if st.button("🔢  Operações Básicas", use_container_width=True):
+    st.markdown("""---
+<style>
+/* Botões grandes para o menu — mobile friendly */
+div[data-testid="stButton"] > button {
+    min-height: 4.8rem !important;
+    font-size: 1.15rem !important;
+    border-radius: 16px !important;
+    padding: 1.2rem 1rem !important;
+    letter-spacing: .02em !important;
+}
+</style>""", unsafe_allow_html=True)
+    if st.button("🔢   Operações Básicas", use_container_width=True):
         st.session_state.tela = "nome_operacoes"
         st.rerun()
+    st.markdown('</div>', unsafe_allow_html=True)
 
-    if st.button("🧩  Estruturas de Controle", use_container_width=True):
+    st.markdown("<div style='height:.6rem'></div>", unsafe_allow_html=True)
+
+    st.markdown('<div class="menu-btn">', unsafe_allow_html=True)
+    if st.button("🧩   Estruturas de Controle", use_container_width=True):
         st.session_state.tela = "nome_portugol"
         st.rerun()
+    st.markdown('</div>', unsafe_allow_html=True)
 
     st.stop()
 
