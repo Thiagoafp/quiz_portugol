@@ -31,7 +31,7 @@ html, body, [class*="css"] { font-family: 'Syne', sans-serif; }
 }
 hr { border-color: #21262d !important; }
 .stButton > button {
-    background-color: #58a6ff !important;
+    background-color: #1a3a6b !important;
     color: white !important;
     border: none !important;
     border-radius: 12px !important;
@@ -42,7 +42,7 @@ hr { border-color: #21262d !important; }
     line-height: 1.4 !important;
 }
 .stButton > button:hover {
-    background-color: #1a3a6b !important;
+    background-color: #58a6ff !important;
 }
 /* Wrapper para botões grandes do menu */
 .menu-btn > div > button, .menu-btn .stButton > button {
