@@ -1,10 +1,7 @@
 import streamlit as st
-import gspread
-import json
 from datetime import datetime
-from google.oauth2.service_account import Credentials
 
-st.set_page_config(page_title="Quiz Portugol", page_icon="💻", layout="centered")
+st.set_page_config(page_title="Atividades Aula", page_icon="💻", layout="centered")
 
 st.markdown("""
 <style>
@@ -34,10 +31,35 @@ html, body, [class*="css"] { font-family: 'Syne', sans-serif; }
 }
 hr { border-color: #21262d !important; }
 .stButton > button {
-    font-family: 'Syne', sans-serif !important;
-    font-weight: 700 !important;
+    background-color: #58a6ff !important;
+    color: white !important;
+    border: none !important;
     border-radius: 8px !important;
+    font-weight: 700 !important;
 }
+.stButton > button:hover {
+    background-color: #191970 !important;
+}
+
+/* Menu de atividades */
+.menu-title {
+    font-family: 'Syne', sans-serif; font-size: 1.6rem; font-weight: 800;
+    color: #e6edf3; text-align: center; margin-bottom: 1.5rem;
+}
+.activity-btn {
+    display: flex; align-items: center; gap: 12px;
+    background: transparent; border: 2px solid #30363d;
+    border-radius: 12px; padding: 1rem 1.4rem;
+    cursor: pointer; transition: all .2s; margin-bottom: .8rem;
+    text-decoration: none; width: 100%;
+}
+.activity-btn:hover { border-color: #58a6ff; background: #161b22; }
+.activity-icon { font-size: 1.4rem; }
+.activity-label {
+    font-family: 'Syne', sans-serif; font-weight: 700;
+    font-size: 1.05rem; color: #e6edf3;
+}
+
 /* Código */
 .code-block {
     background: #161b22; border: 1px solid #30363d; border-radius: 12px;
@@ -58,7 +80,6 @@ hr { border-color: #21262d !important; }
     font-weight: 600; font-size: .82rem;
 }
 .gap-wrong-hint { font-size: .65rem; color: #8b949e; display: block; line-height: 1; }
-/* Selectbox compacto */
 div[data-testid="stSelectbox"] > div > div {
     background: #21262d !important;
     border: 2px dashed #58a6ff !important;
@@ -72,9 +93,9 @@ div[data-testid="stSelectbox"] label { display: none !important; }
 </style>
 """, unsafe_allow_html=True)
 
-# ─── EXERCÍCIOS ───────────────────────────────────────────────────────────────
+# ─── EXERCÍCIOS — QUIZ PORTUGOL ───────────────────────────────────────────────
 
-EXERCISES = [
+EXERCISES_PORTUGOL = [
     {
         "titulo": "Estrutura de Repetição — enquanto",
         "linhas": [
@@ -133,51 +154,84 @@ EXERCISES = [
     },
 ]
 
-# ─── GOOGLE SHEETS ───────────────────────────────────────────────────────────
+# ─── EXERCÍCIOS — OPERAÇÕES BÁSICAS ──────────────────────────────────────────
 
-SCOPES = ["https://www.googleapis.com/auth/spreadsheets"]
-
-@st.cache_resource
-def get_sheet():
-    creds_dict = json.loads(st.secrets["GOOGLE_CREDENTIALS"])
-    creds = Credentials.from_service_account_info(creds_dict, scopes=SCOPES)
-    client = gspread.authorize(creds)
-    sheet = client.open(st.secrets["SHEET_NAME"]).sheet1
-    return sheet
-
-def salvar_sheets(nome, resultados_por_ex):
-    sheet = get_sheet()
-    # Cria cabeçalho se a planilha estiver vazia
-    if sheet.row_count == 0 or sheet.cell(1, 1).value is None:
-        header = ["timestamp", "aluno"]
-        for i, ex in enumerate(EXERCISES):
-            for k in sorted(ex["gabarito"].keys(), key=int):
-                header.append(f"ex{i+1}_gap{k}_resposta")
-                header.append(f"ex{i+1}_gap{k}_correto")
-            header.append(f"ex{i+1}_acertos")
-        sheet.append_row(header)
-
-    row = [datetime.now().strftime("%Y-%m-%d %H:%M:%S"), nome]
-    for i, ex in enumerate(EXERCISES):
-        resps   = resultados_por_ex[i]["respostas"]
-        results = resultados_por_ex[i]["resultados"]
-        acertos = sum(1 for v in results.values() if v)
-        for k in sorted(ex["gabarito"].keys(), key=int):
-            row.append(resps.get(k, ""))
-            row.append("SIM" if results.get(k) else "NÃO")
-        row.append(acertos)
-    sheet.append_row(row)
+EXERCISES_OPERACOES = [
+    {
+        "titulo": "Aritmética — Vagas por Andar",
+        "linhas": [
+            [["t", 'algoritmo "VagasAndar"']],
+            [["t", "var"]],
+            [["t", "   total_vagas, ocupadas, vagas_livres : "], ["g", 1]],
+            [["t", "inicio"]],
+            [["t", "   total_vagas <- 20"]],
+            [["t", "   ocupadas <- 8"]],
+            [["t", "   vagas_livres <- "], ["g", 2], ["t", " - "], ["g", 3]],
+            [["t", "   escreva("], ["g", 4], ["t", ')']],
+            [["g", 5]],
+        ],
+        "gabarito": {"1": "inteiro", "2": "total_vagas", "3": "ocupadas", "4": "vagas_livres", "5": "fimalgoritmo"},
+        "opcoes": ["inteiro", "real", "total_vagas", "ocupadas", "vagas_livres", "fimalgoritmo", "logico", "escreval", "leia"],
+    },
+    {
+        "titulo": "Operador E — Shopping Lotado?",
+        "linhas": [
+            [["t", 'algoritmo "ShoppingLotado"']],
+            [["t", "var"]],
+            [["t", "   andar1, andar2, andar3 : "], ["g", 1]],
+            [["t", "inicio"]],
+            [["t", "   leia(andar1)"]],
+            [["t", "   leia(andar2)"]],
+            [["t", "   leia(andar3)"]],
+            [["t", "   se (andar1 = 0) "], ["g", 2], ["t", " (andar2 = 0) "], ["g", 3], ["t", " (andar3 = 0) entao"]],
+            [["t", '      escreval("Shopping LOTADO")']],
+            [["t", "   senao"]],
+            [["t", '      escreval("Shopping disponível")']],
+            [["t", "   fimse"]],
+            [["g", 4]],
+        ],
+        "gabarito": {"1": "inteiro", "2": "e", "3": "e", "4": "fimalgoritmo"},
+        "opcoes": ["inteiro", "real", "e", "ou", "nao", "fimalgoritmo", "logico", "fimse", "enquanto"],
+    },
+    {
+        "titulo": "Acumulador — Soma de Vendas",
+        "linhas": [
+            [["t", 'algoritmo "SomaVendas"']],
+            [["t", "var"]],
+            [["t", "   i, total, venda : "], ["g", 1]],
+            [["t", "inicio"]],
+            [["t", "   total <- "], ["g", 2]],
+            [["t", "   i <- 1"]],
+            [["t", "   enquanto i <= 3 faca"]],
+            [["t", "      leia(venda)"]],
+            [["t", "      total <- total "], ["g", 3], ["t", " venda"]],
+            [["t", "      i <- i "], ["g", 4], ["t", " 1"]],
+            [["t", "   fimenquanto"]],
+            [["t", "   escreva(total)"]],
+            [["g", 5]],
+        ],
+        "gabarito": {"1": "inteiro", "2": "0", "3": "+", "4": "+", "5": "fimalgoritmo"},
+        "opcoes": ["inteiro", "real", "0", "1", "+", "-", "*", "fimalgoritmo", "logico"],
+    },
+]
 
 # ─── SESSION STATE ────────────────────────────────────────────────────────────
 
 def init():
     defaults = {
-        "fase": "nome",          # "nome" | "quiz" | "resultado_ex" | "final"
+        "tela": "menu",           # "menu" | "nome_portugol" | "quiz_portugol" | "resultado_ex_portugol" | "final_portugol"
+                                   # | "nome_operacoes" | "quiz_operacoes" | "resultado_ex_operacoes" | "final_operacoes"
         "nome_aluno": "",
-        "ex_idx": 0,
-        "respostas_ex": [{} for _ in EXERCISES],    # respostas brutas por exercício
-        "resultados_ex": [None for _ in EXERCISES], # dict gap->bool por exercício
-        "acertos_ex": [0] * len(EXERCISES),
+        # Portugol
+        "ex_idx_p": 0,
+        "respostas_ex_p": [{} for _ in EXERCISES_PORTUGOL],
+        "resultados_ex_p": [None for _ in EXERCISES_PORTUGOL],
+        "acertos_ex_p": [0] * len(EXERCISES_PORTUGOL),
+        # Operações
+        "ex_idx_o": 0,
+        "respostas_ex_o": [{} for _ in EXERCISES_OPERACOES],
+        "resultados_ex_o": [None for _ in EXERCISES_OPERACOES],
+        "acertos_ex_o": [0] * len(EXERCISES_OPERACOES),
     }
     for k, v in defaults.items():
         if k not in st.session_state:
@@ -185,214 +239,258 @@ def init():
 
 init()
 
-# ─── HEADER ──────────────────────────────────────────────────────────────────
+# ─── HELPERS ──────────────────────────────────────────────────────────────────
 
-st.markdown('<div class="quiz-title">💻 Quiz Portugol</div>', unsafe_allow_html=True)
+def render_quiz(exercises, idx_key, respostas_key, resultados_key, acertos_key, fase_result, fase_final, fase_quiz):
+    exercises_list = exercises
+    idx      = st.session_state[idx_key]
+    ex       = exercises_list[idx]
+    gabarito = ex["gabarito"]
+    opcoes   = ex["opcoes"]
+    verificado = st.session_state[resultados_key][idx] is not None
 
-if st.session_state.fase not in ("nome", "final"):
-    st.markdown('<div class="quiz-subtitle">Preencha as lacunas com os termos corretos.</div>', unsafe_allow_html=True)
+    st.markdown(f"### Exercício {idx+1}/{len(exercises_list)} — {ex['titulo']}")
+    if st.session_state.nome_aluno:
+        st.markdown(f"<div style='color:#8b949e;font-size:.85rem;margin-bottom:.5rem'>👤 {st.session_state.nome_aluno}</div>", unsafe_allow_html=True)
+
+    # Indicador de passos
     dots = '<div class="step-indicator">'
-    for i in range(len(EXERCISES)):
-        cls = "done" if i < st.session_state.ex_idx else ("active" if i == st.session_state.ex_idx else "")
+    for i in range(len(exercises_list)):
+        cls = "done" if i < idx else ("active" if i == idx else "")
         dots += f'<div class="step-dot {cls}"></div>'
     dots += '</div>'
     st.markdown(dots, unsafe_allow_html=True)
 
-# ─── FASE: NOME ──────────────────────────────────────────────────────────────
+    st.markdown('<div class="code-block">', unsafe_allow_html=True)
 
-if st.session_state.fase == "nome":
-    st.markdown('<div class="quiz-subtitle">Bem-vindo! Informe seu nome para começar.</div>', unsafe_allow_html=True)
+    for linha in ex["linhas"]:
+        gaps_na_linha = [str(val) for tipo, val in linha if tipo == "g"]
+        n_gaps = len(gaps_na_linha)
+
+        if n_gaps == 0:
+            texto = "".join(val for tipo, val in linha if tipo == "t")
+            st.markdown(f'<div class="code-row"><span class="ct">{texto}</span></div>', unsafe_allow_html=True)
+        else:
+            partes = linha
+            if verificado:
+                html_row = '<div class="code-row">'
+                for tipo, val in partes:
+                    if tipo == "t":
+                        html_row += f'<span class="ct">{val}</span>'
+                    else:
+                        gid = str(val)
+                        resp = st.session_state[respostas_key][idx].get(gid, "??")
+                        ok   = st.session_state[resultados_key][idx].get(gid, False)
+                        certo = gabarito[gid]
+                        cls  = "gap-correct" if ok else "gap-wrong"
+                        hint = "" if ok else f'<span class="gap-wrong-hint">✓ {certo}</span>'
+                        html_row += f'<span class="{cls}">{resp}{hint}</span>'
+                html_row += '</div>'
+                st.markdown(html_row, unsafe_allow_html=True)
+            else:
+                col_defs = []
+                for tipo, val in partes:
+                    if tipo == "t":
+                        col_defs.append(max(len(val) * 0.12, 1))
+                    else:
+                        col_defs.append(2)
+
+                cols = st.columns(col_defs)
+                col_i = 0
+                for tipo, val in partes:
+                    with cols[col_i]:
+                        if tipo == "t":
+                            st.markdown(f'<span class="ct" style="font-family:\'Fira Code\',monospace;font-size:.88rem;color:#c9d1d9;white-space:pre">{val}</span>', unsafe_allow_html=True)
+                        else:
+                            gid = str(val)
+                            key = f"gap_{idx_key}_{idx}_{gid}"
+                            opcoes_gap = ["— escolha —"] + opcoes
+                            atual = st.session_state[respostas_key][idx].get(gid)
+                            idx_atual = (opcoes_gap.index(atual) if atual and atual in opcoes_gap else 0)
+                            escolha = st.selectbox(
+                                label=f"gap{gid}",
+                                options=opcoes_gap,
+                                index=idx_atual,
+                                key=key,
+                                label_visibility="collapsed"
+                            )
+                            if escolha != "— escolha —":
+                                st.session_state[respostas_key][idx][gid] = escolha
+                            elif gid in st.session_state[respostas_key][idx]:
+                                del st.session_state[respostas_key][idx][gid]
+                    col_i += 1
+
+    st.markdown('</div>', unsafe_allow_html=True)
+
+    # Resultado do exercício
+    if st.session_state.tela == fase_result:
+        resultados = st.session_state[resultados_key][idx]
+        acertos    = st.session_state[acertos_key][idx]
+        total      = len(gabarito)
+        cor = "#3fb950" if acertos == total else ("#f0883e" if acertos >= total // 2 else "#f85149")
+        st.markdown(f"""
+        <div style="text-align:center;padding:10px;border-radius:8px;
+             color:{cor};background:{cor}18;border:1px solid {cor}44;
+             font-family:'Syne',sans-serif;font-weight:700;font-size:1rem;margin-bottom:.8rem">
+            🎯 {acertos}/{total} acertos neste exercício
+        </div>""", unsafe_allow_html=True)
+
+        is_last = idx == len(exercises_list) - 1
+        label   = "Ver Resultado Final 🏁" if is_last else "Próximo Exercício →"
+        if st.button(label, use_container_width=True):
+            if is_last:
+                st.session_state.tela = fase_final
+            else:
+                st.session_state[idx_key] += 1
+                st.session_state.tela = fase_quiz
+            st.rerun()
+        st.stop()
+
+    # Botões de ação
     st.markdown("---")
-    nome = st.text_input("👤 Seu nome", placeholder="Digite seu nome completo...")
-    if st.button("▶ Iniciar Quiz", use_container_width=True, disabled=not nome.strip()):
-        st.session_state.nome_aluno = nome.strip()
-        st.session_state.fase = "quiz"
-        st.rerun()
-    st.stop()
+    col1, col2 = st.columns([3, 1])
 
-# ─── FASE: RESULTADO FINAL ────────────────────────────────────────────────────
+    respostas_atuais = st.session_state[respostas_key][idx]
+    todas_preenchidas = all(str(k) in respostas_atuais for k in gabarito)
 
-if st.session_state.fase == "final":
-    total_lac = sum(len(ex["gabarito"]) for ex in EXERCISES)
-    total_ac  = sum(st.session_state.acertos_ex)
+    with col1:
+        if st.button("✅ Verificar Respostas", use_container_width=True, disabled=not todas_preenchidas):
+            res = {k: (respostas_atuais.get(k) == v) for k, v in gabarito.items()}
+            acertos = sum(1 for v in res.values() if v)
+            st.session_state[resultados_key][idx] = res
+            st.session_state[acertos_key][idx]    = acertos
+            st.session_state.tela = fase_result
+            st.rerun()
+
+    with col2:
+        if st.button("🗑 Limpar", use_container_width=True):
+            st.session_state[respostas_key][idx] = {}
+            st.rerun()
+
+    if not todas_preenchidas:
+        faltam = len(gabarito) - len(respostas_atuais)
+        st.markdown(f"<div style='color:#8b949e;font-size:.78rem;margin-top:.3rem'>⚠️ Preencha ainda {faltam} lacuna(s) para verificar.</div>", unsafe_allow_html=True)
+
+
+def render_final(exercises, acertos_key, nome):
+    total_lac = sum(len(ex["gabarito"]) for ex in exercises)
+    total_ac  = sum(st.session_state[acertos_key])
     emoji = "🏆" if total_ac == total_lac else ("👍" if total_ac >= total_lac // 2 else "📚")
-    msg   = ("Perfeito! Você domina Portugol!" if total_ac == total_lac else
+    msg   = ("Perfeito! Você domina o conteúdo!" if total_ac == total_lac else
              "Muito bem! Continue praticando!" if total_ac >= total_lac // 2 else
              "Continue estudando, você vai melhorar!")
     st.markdown(f"""
     <div class="score-box">
         <div style="font-size:3rem">{emoji}</div>
-        <div style="font-size:1.1rem;color:#8b949e;margin-bottom:.3rem">
-            {st.session_state.nome_aluno}
-        </div>
+        <div style="font-size:1.1rem;color:#8b949e;margin-bottom:.3rem">{nome}</div>
         <div class="score-number">{total_ac}/{total_lac}</div>
         <div style="color:#8b949e;margin-top:.5rem;font-size:1rem">{msg}</div>
     </div>""", unsafe_allow_html=True)
     st.markdown("---")
-    for i, ex in enumerate(EXERCISES):
-        ac  = st.session_state.acertos_ex[i]
+    for i, ex in enumerate(exercises):
+        ac  = st.session_state[acertos_key][i]
         tot = len(ex["gabarito"])
         cor = "#3fb950" if ac == tot else ("#f0883e" if ac >= tot // 2 else "#f85149")
         st.markdown(f"- **Ex {i+1}** — {ex['titulo']}: <span style='color:{cor}'>{ac}/{tot}</span>", unsafe_allow_html=True)
 
-    # Salva CSV
-    resultados_para_csv = [
-        {"respostas": st.session_state.respostas_ex[i],
-         "resultados": st.session_state.resultados_ex[i]}
-        for i in range(len(EXERCISES))
-    ]
-    salvar_sheets(st.session_state.nome_aluno, resultados_para_csv)
-    st.success("✅ Respostas salvas com sucesso!")
+# ─── TELA: MENU ───────────────────────────────────────────────────────────────
 
-    if st.button("🔄 Recomeçar", use_container_width=True):
-        for k in list(st.session_state.keys()):
-            del st.session_state[k]
+if st.session_state.tela == "menu":
+    st.markdown('<div class="menu-title">Atividades Aula</div>', unsafe_allow_html=True)
+    st.markdown("---")
+
+    col_a, col_b = st.columns(1), None
+
+    if st.button("💻  Quiz Portugol", use_container_width=True):
+        st.session_state.tela = "nome_portugol"
         st.rerun()
+
+    if st.button("🔢  Operações Básicas", use_container_width=True):
+        st.session_state.tela = "nome_operacoes"
+        st.rerun()
+
     st.stop()
 
-# ─── FASE: QUIZ ───────────────────────────────────────────────────────────────
+# ─── TELA: NOME ───────────────────────────────────────────────────────────────
 
-idx      = st.session_state.ex_idx
-ex       = EXERCISES[idx]
-gabarito = ex["gabarito"]
-opcoes   = ex["opcoes"]
-verificado = st.session_state.resultados_ex[idx] is not None
+if st.session_state.tela in ("nome_portugol", "nome_operacoes"):
+    titulo = "💻 Quiz Portugol" if st.session_state.tela == "nome_portugol" else "🔢 Operações Básicas"
+    proxima = "quiz_portugol" if st.session_state.tela == "nome_portugol" else "quiz_operacoes"
 
-st.markdown(f"### Exercício {idx+1}/{len(EXERCISES)} — {ex['titulo']}")
-st.markdown(f"<div style='color:#8b949e;font-size:.85rem;margin-bottom:.5rem'>👤 {st.session_state.nome_aluno}</div>", unsafe_allow_html=True)
-
-# ─── Renderiza código com lacunas ─────────────────────────────────────────────
-
-# Coleta as lacunas em ordem para renderizar os selectboxes inline
-gap_ids_em_ordem = []
-for linha in ex["linhas"]:
-    for tipo, val in linha:
-        if tipo == "g":
-            gap_ids_em_ordem.append(str(val))
-
-# Renderiza o bloco de código com HTML + selectboxes do Streamlit intercalados
-# Como Streamlit não permite HTML+widgets misturados, usamos colunas por linha
-
-st.markdown('<div class="code-block">', unsafe_allow_html=True)
-
-for linha in ex["linhas"]:
-    # Conta quantas lacunas há nessa linha
-    gaps_na_linha = [str(val) for tipo, val in linha if tipo == "g"]
-    n_gaps = len(gaps_na_linha)
-
-    if n_gaps == 0:
-        # Linha só texto
-        texto = "".join(val for tipo, val in linha if tipo == "t")
-        if verificado:
-            st.markdown(f'<div class="code-row"><span class="ct">{texto}</span></div>', unsafe_allow_html=True)
-        else:
-            st.markdown(f'<div class="code-row"><span class="ct">{texto}</span></div>', unsafe_allow_html=True)
-    else:
-        # Linha com lacunas — monta colunas
-        # Primeiro conta quantos segmentos temos (textos + gaps alternados)
-        partes = linha  # lista de [tipo, val]
-
-        if verificado:
-            # Pós-resultado: mostra tudo em HTML com classes correct/wrong
-            html_row = '<div class="code-row">'
-            for tipo, val in partes:
-                if tipo == "t":
-                    html_row += f'<span class="ct">{val}</span>'
-                else:
-                    gid = str(val)
-                    resp = st.session_state.respostas_ex[idx].get(gid, "??")
-                    ok   = st.session_state.resultados_ex[idx].get(gid, False)
-                    certo = gabarito[gid]
-                    cls  = "gap-correct" if ok else "gap-wrong"
-                    hint = "" if ok else f'<span class="gap-wrong-hint">✓ {certo}</span>'
-                    html_row += f'<span class="{cls}">{resp}{hint}</span>'
-            html_row += '</div>'
-            st.markdown(html_row, unsafe_allow_html=True)
-        else:
-            # Pré-resultado: textos em HTML, lacunas como selectbox
-            # Usa colunas — proporção: textos finos, gaps largos
-            col_defs = []
-            for tipo, val in partes:
-                if tipo == "t":
-                    col_defs.append(max(len(val) * 0.12, 1))
-                else:
-                    col_defs.append(2)
-
-            cols = st.columns(col_defs)
-            col_i = 0
-            for tipo, val in partes:
-                with cols[col_i]:
-                    if tipo == "t":
-                        st.markdown(f'<span class="ct" style="font-family:\'Fira Code\',monospace;font-size:.88rem;color:#c9d1d9;white-space:pre">{val}</span>', unsafe_allow_html=True)
-                    else:
-                        gid = str(val)
-                        key = f"gap_{idx}_{gid}"
-                        opcoes_gap = ["— escolha —"] + opcoes
-                        atual = st.session_state.respostas_ex[idx].get(gid)
-                        idx_atual = (opcoes_gap.index(atual) if atual and atual in opcoes_gap else 0)
-                        escolha = st.selectbox(
-                            label=f"gap{gid}",
-                            options=opcoes_gap,
-                            index=idx_atual,
-                            key=key,
-                            label_visibility="collapsed"
-                        )
-                        if escolha != "— escolha —":
-                            st.session_state.respostas_ex[idx][gid] = escolha
-                        elif gid in st.session_state.respostas_ex[idx]:
-                            del st.session_state.respostas_ex[idx][gid]
-                col_i += 1
-
-st.markdown('</div>', unsafe_allow_html=True)
-
-# ─── FASE: RESULTADO DO EXERCÍCIO ─────────────────────────────────────────────
-
-if st.session_state.fase == "resultado_ex":
-    resultados = st.session_state.resultados_ex[idx]
-    acertos    = st.session_state.acertos_ex[idx]
-    total      = len(gabarito)
-    cor = "#3fb950" if acertos == total else ("#f0883e" if acertos >= total // 2 else "#f85149")
-    st.markdown(f"""
-    <div style="text-align:center;padding:10px;border-radius:8px;
-         color:{cor};background:{cor}18;border:1px solid {cor}44;
-         font-family:'Syne',sans-serif;font-weight:700;font-size:1rem;margin-bottom:.8rem">
-        🎯 {acertos}/{total} acertos neste exercício
-    </div>""", unsafe_allow_html=True)
-
-    is_last = idx == len(EXERCISES) - 1
-    label   = "Ver Resultado Final 🏁" if is_last else "Próximo Exercício →"
-    if st.button(label, use_container_width=True):
-        if is_last:
-            st.session_state.fase = "final"
-        else:
-            st.session_state.ex_idx += 1
-            st.session_state.fase = "quiz"
-        st.rerun()
+    st.markdown(f'<div class="quiz-title">{titulo}</div>', unsafe_allow_html=True)
+    st.markdown('<div class="quiz-subtitle">Bem-vindo! Informe seu nome para começar.</div>', unsafe_allow_html=True)
+    st.markdown("---")
+    nome = st.text_input("👤 Seu nome", placeholder="Digite seu nome completo...", value=st.session_state.nome_aluno)
+    col1, col2 = st.columns([3, 1])
+    with col1:
+        if st.button("▶ Iniciar", use_container_width=True, disabled=not nome.strip()):
+            st.session_state.nome_aluno = nome.strip()
+            st.session_state.tela = proxima
+            st.rerun()
+    with col2:
+        if st.button("← Voltar", use_container_width=True):
+            st.session_state.tela = "menu"
+            st.rerun()
     st.stop()
 
-# ─── BOTÕES DE AÇÃO ──────────────────────────────────────────────────────────
+# ─── TELA: QUIZ PORTUGOL ──────────────────────────────────────────────────────
 
-st.markdown("---")
-col1, col2 = st.columns([3, 1])
+if st.session_state.tela in ("quiz_portugol", "resultado_ex_portugol"):
+    st.markdown('<div class="quiz-title">💻 Quiz Portugol</div>', unsafe_allow_html=True)
+    render_quiz(
+        EXERCISES_PORTUGOL,
+        "ex_idx_p", "respostas_ex_p", "resultados_ex_p", "acertos_ex_p",
+        "resultado_ex_portugol", "final_portugol", "quiz_portugol"
+    )
+    st.stop()
 
-respostas_atuais = st.session_state.respostas_ex[idx]
-todas_preenchidas = all(str(k) in respostas_atuais for k in gabarito)
+# ─── TELA: RESULTADO FINAL PORTUGOL ──────────────────────────────────────────
 
-with col1:
-    if st.button("✅ Verificar Respostas", use_container_width=True, disabled=not todas_preenchidas):
-        # Calcula resultado
-        res = {k: (respostas_atuais.get(k) == v) for k, v in gabarito.items()}
-        acertos = sum(1 for v in res.values() if v)
-        st.session_state.resultados_ex[idx] = res
-        st.session_state.acertos_ex[idx]    = acertos
-        st.session_state.fase = "resultado_ex"
-        st.rerun()
+if st.session_state.tela == "final_portugol":
+    st.markdown('<div class="quiz-title">💻 Quiz Portugol</div>', unsafe_allow_html=True)
+    render_final(EXERCISES_PORTUGOL, "acertos_ex_p", st.session_state.nome_aluno)
+    col1, col2 = st.columns([1, 1])
+    with col1:
+        if st.button("🔄 Refazer Quiz", use_container_width=True):
+            st.session_state.ex_idx_p = 0
+            st.session_state.respostas_ex_p = [{} for _ in EXERCISES_PORTUGOL]
+            st.session_state.resultados_ex_p = [None for _ in EXERCISES_PORTUGOL]
+            st.session_state.acertos_ex_p = [0] * len(EXERCISES_PORTUGOL)
+            st.session_state.tela = "quiz_portugol"
+            st.rerun()
+    with col2:
+        if st.button("🏠 Menu Principal", use_container_width=True):
+            st.session_state.tela = "menu"
+            st.rerun()
+    st.stop()
 
-with col2:
-    if st.button("🗑 Limpar", use_container_width=True):
-        st.session_state.respostas_ex[idx] = {}
-        st.rerun()
+# ─── TELA: QUIZ OPERAÇÕES ─────────────────────────────────────────────────────
 
-if not todas_preenchidas:
-    faltam = len(gabarito) - len(respostas_atuais)
-    st.markdown(f"<div style='color:#8b949e;font-size:.78rem;margin-top:.3rem'>⚠️ Preencha ainda {faltam} lacuna(s) para verificar.</div>", unsafe_allow_html=True)
+if st.session_state.tela in ("quiz_operacoes", "resultado_ex_operacoes"):
+    st.markdown('<div class="quiz-title">🔢 Operações Básicas</div>', unsafe_allow_html=True)
+    render_quiz(
+        EXERCISES_OPERACOES,
+        "ex_idx_o", "respostas_ex_o", "resultados_ex_o", "acertos_ex_o",
+        "resultado_ex_operacoes", "final_operacoes", "quiz_operacoes"
+    )
+    st.stop()
+
+# ─── TELA: RESULTADO FINAL OPERAÇÕES ─────────────────────────────────────────
+
+if st.session_state.tela == "final_operacoes":
+    st.markdown('<div class="quiz-title">🔢 Operações Básicas</div>', unsafe_allow_html=True)
+    render_final(EXERCISES_OPERACOES, "acertos_ex_o", st.session_state.nome_aluno)
+    col1, col2 = st.columns([1, 1])
+    with col1:
+        if st.button("🔄 Refazer Quiz", use_container_width=True):
+            st.session_state.ex_idx_o = 0
+            st.session_state.respostas_ex_o = [{} for _ in EXERCISES_OPERACOES]
+            st.session_state.resultados_ex_o = [None for _ in EXERCISES_OPERACOES]
+            st.session_state.acertos_ex_o = [0] * len(EXERCISES_OPERACOES)
+            st.session_state.tela = "quiz_operacoes"
+            st.rerun()
+    with col2:
+        if st.button("🏠 Menu Principal", use_container_width=True):
+            st.session_state.tela = "menu"
+            st.rerun()
+    st.stop()
