@@ -31,10 +31,16 @@ html, body, [class*="css"] { font-family: 'Syne', sans-serif; }
 }
 hr { border-color: #21262d !important; }
 .stButton > button {
-    font-family: 'Syne', sans-serif !important;
-    font-weight: 700 !important;
+    background-color: #58a6ff !important;  /* azul claro */
+    color: white !important;
+    border: none !important;
     border-radius: 8px !important;
+    font-weight: 700 !important;
 }
+.stButton > button:hover {
+    background-color: #191970 !important; /* azul mais claro no hover */
+}
+
 /* Código */
 .code-block {
     background: #161b22; border: 1px solid #30363d; border-radius: 12px;
