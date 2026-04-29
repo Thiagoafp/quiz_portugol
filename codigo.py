@@ -98,15 +98,21 @@ div[data-testid="stSelectbox"] label { display: none !important; }
 EXERCISES_PORTUGOL = [
     {
         "titulo": "Estrutura de Repetição — enquanto",
+        "instrucao": "💡 Use enquanto para repetir um bloco enquanto a condição for verdadeira. Variáveis lógicas recebem verdadeiro ou falso.",
         "linhas": [
             [["t", 'algoritmo "Repeticao"']],
             [["t", "var"]],
+            [["t", "   // Variável lógica: só aceita verdadeiro ou falso"]],
             [["t", "   tem_combustivel : "], ["g", 1]],
             [["t", "inicio"]],
+            [["t", "   // Começa com verdadeiro para entrar no loop"]],
             [["t", "   tem_combustivel <- "], ["g", 2]],
+            [["t", "   // Repete enquanto a condição for verdadeira"]],
             [["t", "   "], ["g", 3], ["t", " tem_combustivel faca"]],
             [["t", '      escreval("Carro andando...")']],
+            [["t", "      // Muda para falso e encerra o loop"]],
             [["t", "      tem_combustivel <- "], ["g", 4]],
+            [["t", "   // Fecha o bloco de repetição"]],
             [["t", "   "], ["g", 5]],
             [["g", 6]],
         ],
@@ -115,17 +121,24 @@ EXERCISES_PORTUGOL = [
     },
     {
         "titulo": "Estrutura Condicional — se...entao...senao",
+        "instrucao": "💡 Use se...entao para tomar decisões. O senao é executado quando a condição é falsa. Feche sempre com fimse.",
         "linhas": [
             [["t", 'algoritmo "Condicional"']],
             [["t", "var"]],
+            [["t", "   // Variável que guardará a nota digitada"]],
             [["t", "   nota : "], ["g", 1]],
             [["t", "inicio"]],
+            [["t", "   // Mostra mensagem na tela sem pular linha"]],
             [["t", "   "], ["g", 2], ["t", '("Digite sua nota:")']],
+            [["t", "   // Lê o valor digitado pelo usuário"]],
             [["t", "   "], ["g", 3], ["t", "(nota)"]],
+            [["t", "   // Verifica a condição"]],
             [["t", "   "], ["g", 4], ["t", " nota >= 7 entao"]],
             [["t", '      escreval("Aprovado!")']],
+            [["t", "   // Caso contrário (nota < 7)"]],
             [["t", "   "], ["g", 5]],
             [["t", '      escreval("Reprovado!")']],
+            [["t", "   // Fecha o bloco condicional"]],
             [["t", "   "], ["g", 6]],
             [["t", "fimalgoritmo"]],
         ],
@@ -134,18 +147,23 @@ EXERCISES_PORTUGOL = [
     },
     {
         "titulo": "Estrutura de Escolha — escolha...seja",
+        "instrucao": "💡 Use escolha...seja para testar vários casos de uma variável. Sempre feche com fimescolha.",
         "linhas": [
             [["t", 'algoritmo "EscolhaDia"']],
             [["t", "var"]],
+            [["t", "   // Variável que receberá o número do dia"]],
             [["t", "   dia : "], ["g", 1]],
             [["t", "inicio"]],
+            [["t", "   // Pede o valor ao usuário"]],
             [["t", "   "], ["g", 2], ["t", '("Digite o dia (1-3):")']],
             [["t", "   "], ["g", 3], ["t", "(dia)"]],
+            [["t", "   // Testa cada caso possível da variável dia"]],
             [["t", "   "], ["g", 4], ["t", " dia "], ["g", 5]],
             [["t", '      1: escreval("Segunda-feira")']],
             [["t", '      2: escreval("Terca-feira")']],
             [["t", '      3: escreval("Quarta-feira")']],
             [["t", '      outrocaso: escreval("Dia invalido")']],
+            [["t", "   // Fecha o bloco de escolha"]],
             [["t", "   "], ["g", 6]],
             [["t", "fimalgoritmo"]],
         ],
@@ -410,12 +428,12 @@ if st.session_state.tela == "menu":
 
     col_a, col_b = st.columns(1), None
 
-    if st.button("💻  Quiz Portugol", use_container_width=True):
-        st.session_state.tela = "nome_portugol"
-        st.rerun()
-
     if st.button("🔢  Operações Básicas", use_container_width=True):
         st.session_state.tela = "nome_operacoes"
+        st.rerun()
+
+    if st.button("🧩  Estruturas de Controle", use_container_width=True):
+        st.session_state.tela = "nome_portugol"
         st.rerun()
 
     st.stop()
@@ -423,7 +441,7 @@ if st.session_state.tela == "menu":
 # ─── TELA: NOME ───────────────────────────────────────────────────────────────
 
 if st.session_state.tela in ("nome_portugol", "nome_operacoes"):
-    titulo = "💻 Quiz Portugol" if st.session_state.tela == "nome_portugol" else "🔢 Operações Básicas"
+    titulo = "🧩 Estruturas de Controle" if st.session_state.tela == "nome_portugol" else "🔢 Operações Básicas"
     proxima = "quiz_portugol" if st.session_state.tela == "nome_portugol" else "quiz_operacoes"
 
     st.markdown(f'<div class="quiz-title">{titulo}</div>', unsafe_allow_html=True)
@@ -445,7 +463,7 @@ if st.session_state.tela in ("nome_portugol", "nome_operacoes"):
 # ─── TELA: QUIZ PORTUGOL ──────────────────────────────────────────────────────
 
 if st.session_state.tela in ("quiz_portugol", "resultado_ex_portugol"):
-    st.markdown('<div class="quiz-title">💻 Quiz Portugol</div>', unsafe_allow_html=True)
+    st.markdown('<div class="quiz-title">🧩 Estruturas de Controle</div>', unsafe_allow_html=True)
     render_quiz(
         EXERCISES_PORTUGOL,
         "ex_idx_p", "respostas_ex_p", "resultados_ex_p", "acertos_ex_p",
@@ -456,7 +474,7 @@ if st.session_state.tela in ("quiz_portugol", "resultado_ex_portugol"):
 # ─── TELA: RESULTADO FINAL PORTUGOL ──────────────────────────────────────────
 
 if st.session_state.tela == "final_portugol":
-    st.markdown('<div class="quiz-title">💻 Quiz Portugol</div>', unsafe_allow_html=True)
+    st.markdown('<div class="quiz-title">🧩 Estruturas de Controle</div>', unsafe_allow_html=True)
     render_final(EXERCISES_PORTUGOL, "acertos_ex_p", st.session_state.nome_aluno)
     col1, col2 = st.columns([1, 1])
     with col1:
